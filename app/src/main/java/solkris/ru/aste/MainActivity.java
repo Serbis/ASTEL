@@ -12,6 +12,17 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        String text = "public class Main {\n" +
+                "   public void main() {\n" +
+                "       int a = 1;\n" +
+                "       int b = 1.9;\n" +
+                "       String c = \"abc\";\n"+
+                "   }\n" +
+                "}";
+
+        SyntaxEditText syntaxEditText = (SyntaxEditText) findViewById(R.id.set1);
+        syntaxEditText.setText(text);
     }
 
 
