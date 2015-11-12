@@ -2,12 +2,14 @@ package solkris.ru.aste.lexer;
 
 import android.graphics.Color;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import solkris.ru.aste.desc.FontStyle;
 import solkris.ru.aste.desc.Keyword;
 
 /**
- * Created by serbis on 26.10.15.
+ * Main view class token
  */
 public class Token {
     /** Text representation of token */
@@ -21,7 +23,7 @@ public class Token {
     /** Font style of a particular token */
     public FontStyle fontStyle;
     /** List of keyword specified */
-    public static List<Keyword> keywords;
+    public static List<Keyword> keywords = new ArrayList<Keyword>();
     /** Text style of numbers*/
     public static FontStyle nubersStyle;
     /** Text style of constants (Such as "...") */
@@ -36,20 +38,42 @@ public class Token {
     public static final FontStyle STYLE_DEF_TEXT = new FontStyle(10, Color.BLACK, "-", false, false, false);
 
     /**
-     * Constructor. Sets the token params. Specifies the length of the token.
+     * Constructor 1. Sets the token params. Specifies the length of the token.
      * Sets default tokens style.
      *
      * @param lexeme Text representation of token
      * @param line Line number on witch the token
      * @param offset Offset in characters from the beginning of the file
-     * @param fontStyle Font style of the token
      */
-    public Token(String lexeme, int line, int offset, FontStyle fontStyle) {
+    public Token(String lexeme, int line, int offset) {
         this.lexeme = lexeme;
         this.line = line;
         this.offset = offset;
         length = lexeme.length();
-        this.fontStyle = fontStyle;
     }
 
+    public void identKey() {
+        for (int i = 0; i < keywords.size(); i++) {
+            if (keywords.get(i).lexeme.equals(lexeme)) {
+                fontStyle = keywords.get(i).fontStyle;
+                break;
+            }
+        }
+    }
+
+    public void identConst() {
+        fontStyle = constantStyle;
+    }
+
+    public void identNum() {
+       fontStyle = nubersStyle;
+    }
+
+    public void identSpace() {
+
+    }
+
+    public void identText() {
+        fontStyle = textStyle;
+    }
 }

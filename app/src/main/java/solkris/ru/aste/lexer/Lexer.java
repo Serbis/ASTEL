@@ -1,34 +1,33 @@
 package solkris.ru.aste.lexer;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+
 /**
  * Created by serbis on 26.10.15.
  */
 public class Lexer {
-    /*public static int line = 1;
+    public static int line = 1;
+    private int charcounter = 0;
     private char peek = ' ';
-    private Hashtable words = new Hashtable();
+    private Hashtable<String, Key> keys = new Hashtable<String, Key>();
 
     public Lexer() {
-        reserve(new Word("class", Tag.CLASS));
-        reserve(new Word("if", Tag.IF));
-        reserve(new Word("else", Tag.ELSE));
-        reserve(new Word("while", Tag.WHILE));
-        reserve(new Word("do", Tag.DO));
-        reserve(new Word("break", Tag.BREAK));
-        reserve(Word.True);
-        reserve(Word.False);
-        reserve(Type.Int);
-        reserve(Type.Char);
-        reserve(Type.Bool);
-        reserve(Type.Float);
+        for (int i = 0; i < Token.keywords.size(); i++) {
+            reserve(new Key(Token.keywords.get(i).lexeme));
+        }
     }
 
-    private void reserve(Word t) {
-        words.put(t.lexeme, t);
+    private void reserve(Key t) {
+        keys.put(t.lexeme, t);
     }
 
     private void readch() throws IOException {
         peek = (char) System.in.read();
+        charcounter++;
     }
 
     private boolean readch(char c) throws IOException{
@@ -38,13 +37,27 @@ public class Lexer {
         return true;
     }
 
+    public List<Token> scanAll(String input) {
+        List<Token> tokens = new ArrayList<Token>();
+        Token st;
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
+        try {
+            while(true) {
+                tokens.add(scan());
+            }
+        } catch (IOException ignored) { }
+
+        return tokens;
+    }
+
     public Token scan() throws IOException {
-        for ( ; ; readch()) {
+        readch();
+        /*for ( ; ; readch()) {
             if (peek == ' ' || peek == '\t') continue;
             else if (peek == '\n') line++;
             else break;
-        }
-        switch (peek) {
+        }*/
+        /*switch (peek) {
             case '&':
                 if (readch('&')) return Word.and;
                 else return new Token('&');
@@ -63,8 +76,8 @@ public class Lexer {
             case '>':
                 if (readch('=')) return Word.ge;
                 else return new Token('>');
-        }
-        if (Character.isDigit(peek)) {
+        }*/
+        /*if (Character.isDigit(peek)) {
             int v = 0;
             do {
                 v = 10 * v + Character.digit(peek, 10);
@@ -80,7 +93,7 @@ public class Lexer {
                 d = d * 10;
             }
             return new Real(x);
-        }
+        }*/
 
         if (Character.isLetter(peek)) {
             StringBuffer b = new StringBuffer();
@@ -89,16 +102,19 @@ public class Lexer {
                 readch();
             } while (Character.isLetterOrDigit(peek));
             String s = b.toString();
-            Word w = (Word) words.get(s);
-            if (w != null) return w;
-            w = new Word(s, Tag.ID);
-            words.put(s, w);
-            return w;
+            Key k = (Key) keys.get(s);
+            if (k != null) {
+                k.line = line;
+                k.offset = charcounter;
+                return k;
+            }
+            Text t = new Text(s, line, charcounter);
+            return t;
         }
-        Token t = new Token(peek);
+        //Token t = new Token("", 0, 0);
         peek = ' ';
-        return t;
-    }*/
+        return null;
+    }
 
 
 }

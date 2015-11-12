@@ -5,10 +5,11 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.EditText;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import solkris.ru.aste.desc.FontStyle;
 import solkris.ru.aste.desc.Keyword;
-import solkris.ru.aste.lexer.FontStyle;
 import solkris.ru.aste.lexer.Lexer;
 import solkris.ru.aste.lexer.Token;
 
@@ -18,6 +19,8 @@ import solkris.ru.aste.lexer.Token;
 public class SyntaxEditText extends EditText {
     /** Object of the lexical analyzer */
     private Lexer lexer = null;
+    /** List of strings in html representation */
+    private List<String> htmlStrings = new ArrayList<String>();
 
     /**
      * Constructor 1.
@@ -105,7 +108,7 @@ public class SyntaxEditText extends EditText {
             lexer = new Lexer();
         }
 
-
+        List<Token> lexstream = lexer.scanAll(text.toString());
 
         //Вызываем лексический анализатор - метод ScanAll
         //Он возращает нам массив лексемм и мы передаем его в метод

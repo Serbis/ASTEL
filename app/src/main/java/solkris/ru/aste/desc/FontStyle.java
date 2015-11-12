@@ -1,4 +1,4 @@
-package solkris.ru.aste.lexer;
+package solkris.ru.aste.desc;
 
 import android.graphics.Color;
 

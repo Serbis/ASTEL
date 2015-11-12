@@ -1,7 +1,5 @@
 package solkris.ru.aste.desc;
 
-import solkris.ru.aste.lexer.FontStyle;
-
 /**
  * Describes the keyword and its characteristics
  */
