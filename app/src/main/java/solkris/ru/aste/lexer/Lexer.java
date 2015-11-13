@@ -1,6 +1,5 @@
 package solkris.ru.aste.lexer;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -12,6 +11,8 @@ import java.util.List;
 public class Lexer {
     public static int line = 1;
     private int charcounter = 0;
+    private int chpointer = 0;
+    private String scanstr;
     private char peek = ' ';
     private Hashtable<String, Key> keys = new Hashtable<String, Key>();
 
@@ -26,8 +27,12 @@ public class Lexer {
     }
 
     private void readch() throws IOException {
-        peek = (char) System.in.read();
-        charcounter++;
+        try {
+            peek = scanstr.charAt(chpointer);
+            chpointer++;
+        } catch (IndexOutOfBoundsException e) {
+            peek = (char) -1;
+        }
     }
 
     private boolean readch(char c) throws IOException{
@@ -40,7 +45,7 @@ public class Lexer {
     public List<Token> scanAll(String input) {
         List<Token> tokens = new ArrayList<Token>();
         Token st;
-        System.setIn(new ByteArrayInputStream(input.getBytes()));
+        scanstr = input;
         try {
             while(true) {
                 tokens.add(scan());
