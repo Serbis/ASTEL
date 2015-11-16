@@ -1,8 +1,9 @@
 package solkris.ru.aste.lexer;
 
 /**
- * Created by serbis on 12.11.15.
+ * It describes the numeric codes tokens
  */
 public class Tag {
-    public static final int KEY = 256, NUM = 257, CONST = 258, SPACE = 259, UNDEF = 260;
+    /** An array of token codes */
+    public static final int KEY = 256, NUM = 257, SPACE = 259, TEXT = 260;
 }

@@ -6,26 +6,64 @@ import java.util.Hashtable;
 import java.util.List;
 
 /**
- * Created by serbis on 26.10.15.
+ * The main module of the lexical analyzer. The lexical analyzer has two
+ * main objectives. The first lies in the fact that getting to the part
+ * of some of the text, he breaks it down into a stream of tokens, each of
+ * which contains full information about themselves necessary for the
+ * construction of the highlighted text. This character offset, size, style
+ * of the text, token type, whether it is a constant and Parameters of the
+ * other. The second task of the lexical analyzer is a redefinition of the
+ * token. This happens every time there is a change of any token in a text
+ * editor.
  */
 public class Lexer {
-    public static int line = 1;
-    private int charcounter = 0;
+    /** Counter lines of source code */
+    private int line = 1;
+    /** Pointer to the number of the current unreadable characters */
     private int chpointer = 0;
+    /** Source code */
     private String scanstr;
+    /** Read from the stream of the source text symbol */
     private char peek = ' ';
-    private Hashtable<String, Key> keys = new Hashtable<String, Key>();
+    /** The number of spaces, which will be replaced by a tab if it is to meet
+     *  in source code*/
+    private int tabspace = 5;
+    /** Arbitrary displacement, it will stack to shift the original token.
+     * There is a consequence of the fact that the tab character is replaced
+     * by a certain number of spaces, and offset token starts to lag behind
+     * in the n characters to the left. This value is compensated.*/
+    private int interoffset = 0;
+    /** The flag constants. Set occurs when the quote character. Cleared when
+     *  detecting the closing symbol.
+     */
+    private boolean constactive = false;
+    /** An array of keywords */
+    private Hashtable<String, Key> keys = new Hashtable<>();
 
+    /**
+     * Constructor. Produces reservations keywords
+     */
     public Lexer() {
         for (int i = 0; i < Token.keywords.size(); i++) {
             reserve(new Key(Token.keywords.get(i).lexeme));
         }
     }
 
+    /**
+     * Add keywords to an array of keywords
+     *
+     * @param t Keyword token
+     */
     private void reserve(Key t) {
         keys.put(t.lexeme, t);
     }
 
+    /**
+     * Reads a character from the stream and moves the pointer to the unit.
+     * If you reach the end of the stream returns -1
+     *
+     * @throws IOException The general case of exception handling
+     */
     private void readch() throws IOException {
         try {
             peek = scanstr.charAt(chpointer);
@@ -35,6 +73,14 @@ public class Lexer {
         }
     }
 
+    /**
+     * Reads a character from the stream, and compares with the arguments.
+     * It returns the result of the comparison.
+     *
+     * @param c The symbol for comparison
+     * @return Result of the comparison
+     * @throws IOException The general case of exception handling
+     */
     private boolean readch(char c) throws IOException{
         readch();
         if (peek != c) return false;
@@ -42,53 +88,97 @@ public class Lexer {
         return true;
     }
 
+    /**
+     * It converts incoming text into an array of tokens. Calls the scan(),
+     * each call is returned, a separate token. This token is added to the
+     * array. Sampling techniques to occur until the scan method scan()
+     * does not return to null.
+     *
+     * @param input Source text
+     * @return Array of token
+     *
+     */
     public List<Token> scanAll(String input) {
-        List<Token> tokens = new ArrayList<Token>();
+        List<Token> tokens = new ArrayList<>();
         Token st;
         scanstr = input;
         try {
-            while(true) {
-                tokens.add(scan());
+            while((st = scan()) != null) {
+                tokens.add(st);
             }
         } catch (IOException ignored) { }
 
         return tokens;
     }
 
+    /**
+     * Gets the next token in the stream of characters. The method is divided
+     * into several logical blocks. At the beginning of the design tested model
+     * of dual language characters.. If the result is not given the results,
+     * there is an attempt to determine the numeric token. If she does not try
+     * to identify the given control character. Further checks for an
+     * alphabetic token. If If all these checks fail, then this text token
+     * indefinitely.
+     *
+     * @return Detected token
+     * @throws IOException
+     */
     public Token scan() throws IOException {
         readch();
-        /*for ( ; ; readch()) {
-            if (peek == ' ' || peek == '\t') continue;
-            else if (peek == '\n') line++;
-            else break;
-        }*/
-        /*switch (peek) {
+        switch (peek) {
             case '&':
-                if (readch('&')) return Word.and;
-                else return new Token('&');
+                if (readch('&')) {
+                    return new Text("&&", line, chpointer - 2 + interoffset, constactive);
+                } else {
+                    chpointer--;
+                    return new Text("&", line, chpointer - 1 + interoffset, constactive);
+                }
             case '|':
-                if (readch('|')) return Word.or;
-                else return new Token('|');
+                if (readch('|')) {
+                    return new Text("||", line, chpointer - 2 + interoffset, constactive);
+                } else {
+                    chpointer--;
+                    return new Text("|", line, chpointer - 1 + interoffset, constactive);
+                }
             case '=':
-                if (readch('=')) return Word.eq;
-                else return new Token('=');
+                if (readch('=')) {
+                    return new Text("==", line, chpointer - 2 + interoffset, constactive);
+                } else {
+                    chpointer--;
+                    return new Text("=", line, chpointer - 1 + interoffset, constactive);
+                }
             case '!':
-                if (readch('=')) return Word.ne;
-                else return new Token('!');
+                if (readch('=')) {
+                    return new Text("!=", line, chpointer - 2 + interoffset, constactive);
+                } else {
+                    chpointer--;
+                    return new Text("!", line, chpointer - 1 + interoffset, constactive);
+                }
             case '<':
-                if (readch('=')) return Word.le;
-                else return new Token('<');
+                if (readch('=')) {
+                    return new Text("<=", line, chpointer - 2 + interoffset, constactive);
+                } else {
+                    chpointer--;
+                    return new Text("<", line, chpointer - 1 + interoffset, constactive);
+                }
             case '>':
-                if (readch('=')) return Word.ge;
-                else return new Token('>');
-        }*/
-        /*if (Character.isDigit(peek)) {
+                if (readch('=')) {
+                    return new Text(">=", line, chpointer - 2 + interoffset, constactive);
+                } else {
+                    chpointer--;
+                    return new Text(">", line, chpointer - 1 + interoffset, constactive);
+                }
+        }
+        if (Character.isDigit(peek)) {
             int v = 0;
             do {
                 v = 10 * v + Character.digit(peek, 10);
                 readch();
             } while (Character.isDigit(peek));
-            if (peek != '.') return new Num(v);
+            if (peek != '.') {
+                chpointer--;
+                return new Num(String.valueOf(v), line, chpointer - String.valueOf(v).length() + interoffset, constactive);
+            }
             float x = v;
             float d = 10;
             for (;;) {
@@ -97,29 +187,142 @@ public class Lexer {
                 x = x + Character.digit(peek, 10) / d;
                 d = d * 10;
             }
-            return new Real(x);
-        }*/
+            chpointer--;
+            return new Num(String.valueOf(x), line, chpointer - String.valueOf(x).length() + interoffset, constactive);
+        }
+
+        Token tokk = getSpecSymbol(peek);
+        if (tokk != null) {
+            return tokk;
+        }
 
         if (Character.isLetter(peek)) {
-            StringBuffer b = new StringBuffer();
+
+            StringBuilder b = new StringBuilder();
             do {
                 b.append(peek);
                 readch();
             } while (Character.isLetterOrDigit(peek));
             String s = b.toString();
-            Key k = (Key) keys.get(s);
+            Key k = keys.get(s);
             if (k != null) {
-                k.line = line;
-                k.offset = charcounter;
-                return k;
+                Key key = new Key(k.lexeme, line,chpointer - k.length + interoffset,constactive);
+                chpointer--;
+                return key;
             }
-            Text t = new Text(s, line, charcounter);
+            Text t = new Text(s, line, chpointer - s.length() + interoffset, constactive);
+            chpointer--;
             return t;
         }
-        //Token t = new Token("", 0, 0);
+
+        if (peek == (char) -1) {
+            return null;
+        }
+        Text t = new Text(String.valueOf(peek), line, chpointer - 1 + interoffset, constactive);
         peek = ' ';
-        return null;
+        return t;
     }
+
+    /**
+     * Checks symbol of belonging to the control characters. Control characters
+     * are to be understood in relation to the lexical analyzer (to quote an
+     * example is such). If this space is a method getSpaceToken () for to read
+     * a sequence of whitespace. If it's a newline, it increments the counter
+     * lines. If it is a tab character, calls the getSpaceToken () to form a
+     * tab sequence whitespaces. If this is what any of the quotes, sets a flag
+     * constants. Otherwise it distorts null.
+     *
+     * @param c Incoming symbol
+     * @return Detected token
+     * @throws IOException
+     */
+    private Token getSpecSymbol(char c) throws IOException {
+        Text t;
+        switch (c) {
+            case ' ':
+                return getSpaceToken();
+            case '\n':
+                Text text =  new Text(String.valueOf(c), line, chpointer - 2 + interoffset, constactive);
+                line++;
+                return text;
+            case '\t':
+                return getTabSpaces();
+            case '\'':
+                if (!constactive) {
+                    t = new Text(String.valueOf(c), line, chpointer - 1 + interoffset, constactive);
+                    constactive = true;
+                } else {
+                    constactive = false;
+                    t = new Text(String.valueOf(c), line, chpointer - 1 + interoffset, constactive);
+                }
+                return t;
+            case '"':
+                if (!constactive) {
+                    t = new Text(String.valueOf(c), line, chpointer - 1 + interoffset, constactive);
+                    constactive = true;
+                } else {
+                    constactive = false;
+                    t = new Text(String.valueOf(c), line, chpointer - 1 + interoffset, constactive);
+                }
+                return t;
+
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Selects from the stream sequentially consecutive spaces and forms of
+     * these tokens whitespace
+     *
+     * @return Whitespace token
+     * @throws IOException
+     */
+    private Token getSpaceToken() throws IOException {
+        StringBuilder sb = new StringBuilder();
+        while (peek == ' ') {
+            sb.append(' ');
+            readch();
+        }
+        Space space = new Space(sb.toString(), line, chpointer - 2 - sb.length());
+        chpointer--;
+        return space;
+    }
+
+    /**
+     * Sets the number of spaces to be replaced by a tab
+     *
+     * @param count Number of spaces
+     */
+    public void setTabSpacesCount(int count) {
+        tabspace = count;
+    }
+
+    /**
+     * It creates a white space on the basis of token value tabulation number
+     * of spaces. Equivalent increments relative displacement going ahead
+     * tokens.
+     *
+     * @return Whitespace token
+     */
+    private Token getTabSpaces() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < tabspace; i++) {
+            sb.append(" ");
+            interoffset++;
+        }
+        return new Space(sb.toString(), line, chpointer - tabspace);
+    }
+
+    /*private boolean isSymbol(char c) {
+        for (int i = 0; i < Tag.SINGLES.length; i++) {
+            if (c == Tag.SINGLES[i]) {
+                return true;
+            }
+        }
+
+        return false;
+    }*/
 
 
 }

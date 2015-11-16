@@ -22,6 +22,7 @@ public class SyntaxEditText extends EditText {
     /** List of strings in html representation */
     private List<String> htmlStrings = new ArrayList<String>();
 
+
     /**
      * Constructor 1.
      *
@@ -79,7 +80,7 @@ public class SyntaxEditText extends EditText {
      * @param style Styles of numerical tokens
      */
     public void setNumbersStyle(FontStyle style) {
-        Token.nubersStyle = style;
+        Token.numbersStyle = style;
     }
 
     /**
@@ -100,18 +101,68 @@ public class SyntaxEditText extends EditText {
         Token.textStyle = style;
     }
 
-    @Override
-    public void setText(CharSequence text, BufferType type) {
-        super.setText(text, type);
-
+    public void setText(String text) {
+        int line = 1;
         if (lexer == null) {
             lexer = new Lexer();
         }
 
-        List<Token> lexstream = lexer.scanAll(text.toString());
+        List<Token> tokens = lexer.scanAll(text);
+        ArrayList<List<Token>> tokla = new ArrayList<>();
+        List<Token> ts = new ArrayList<>();
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens.get(i).line == line) {
+                ts.add(tokens.get(i));
+            } else {
+                line = tokens.get(i).line;
+                tokla.add(ts);
+                ts = new ArrayList<>();
+                ts.add(tokens.get(i));
+            }
+        }
+        tokla.add(ts);
+        htmlStrings = formateHtmlString(tokla);
+        int a;
+        a = 1 + 2;
+        //setText(Html.fromHtml(formateHtml(tokens)));
+    }
 
-        //Вызываем лексический анализатор - метод ScanAll
-        //Он возращает нам массив лексемм и мы передаем его в метод
-        //формовки html строки, откуда она и ставится как текст компонента
+    private List<String> formateHtmlString(ArrayList<List<Token>> ta) {
+        List<String> list = new ArrayList<>();
+        for (int i = 0; i < ta.size(); i++) {
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < ta.get(i).size(); j++) {
+                String tmp = "<font color=\"#FF8C00\" size=\"4\" face=\"Arial, Helvetica, sans-serif\"><u><i><b>class</font><br>";
+                Token tok = ta.get(i).get(j);
+                sb.append("<font color=\"#").append(parceHexFromInt(tok.fontStyle.color)).append("\" ");
+                sb.append("size=\"").append(tok.fontStyle.size).append("\" ");
+                sb.append("face=\"").append(tok.fontStyle.font).append("\">");
+                if (tok.fontStyle.bold)
+                    sb.append("<b>");
+                if (tok.fontStyle.italic)
+                    sb.append("<i>");
+                if (tok.fontStyle.underline)
+                    sb.append("<u>");
+                //if (tok.ta)
+                sb.append(tok.lexeme);
+                sb.append("</font>");
+                if (tok.lexeme.equals("\n"))
+                    sb.append("<br>");
+            }
+            list.add(sb.toString());
+        }
+
+        return list;
+    }
+
+    private String parceHexFromInt(int n) {
+        String hex = Integer.toHexString(n);
+        if (hex.length() < 6) { //добавляем отсутствуюшие нули
+            String h = hex;
+            for (int i = 0; i < 6 - h.length(); i++) {
+                hex = "0" + hex;
+            }
+        }
+        return hex;
     }
 }

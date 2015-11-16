@@ -1,14 +1,25 @@
 package solkris.ru.aste.lexer;
 
 /**
- * Created by serbis on 26.10.15.
+ * Describes the numeric tokens
  */
 public class Num extends Token {
-    int tag = Tag.NUM;
+    /**
+     * Constructor 1.
+     *
+     * @param lexeme Text representation of token
+     * @param line Line number on witch the token
+     * @param offset Offset in characters from the beginning of the file
+     * @param constflag Flag constant values. If it is set, the style of
+     *                  illumination of the tokens will be replaced with
+     *                  the style constants. This is to ensure that definitely
+     *                  determine the constants within quotation marks, even
+     *                  if they con- tains other keywords.
+     */
+    public Num(String lexeme, int line, int offset, boolean constflag) {
+        super(lexeme, line, offset, constflag);
 
-    public Num(String lexeme, int line, int offset) {
-        super(lexeme, line, offset);
-
+        tag = Tag.NUM;
         identNum();
     }
 }

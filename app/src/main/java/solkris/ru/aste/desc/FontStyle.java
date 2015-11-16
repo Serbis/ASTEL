@@ -7,17 +7,17 @@ import android.graphics.Color;
  */
 public class FontStyle {
     /** Font size */
-    private int size;
+    public int size;
     /** Font color */
-    private int color;
+    public int color;
     /** Font name */
-    private String font;
+    public String font;
     /** Flag of bold text style */
-    private boolean bold = false;
+    public boolean bold = false;
     /** Flag of italic text style */
-    private boolean italic = false;
+    public boolean italic = false;
     /** Flag of underline text style */
-    private boolean underline = false;
+    public boolean underline = false;
 
     /** Constructor 1. Init default values */
     public FontStyle() {
@@ -98,6 +98,8 @@ public class FontStyle {
     public void setUnderlie(boolean enabled) {
         underline = enabled;
     }
+
+
 
 
 
