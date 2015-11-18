@@ -145,7 +145,7 @@ public class Lexer {
                     return new Text("==", line, chpointer - 2 + interoffset, constactive);
                 } else {
                     chpointer--;
-                    return new Text("=", line, chpointer - 1 + interoffset, constactive);
+                    return new Text("=", line, chpointer + interoffset, constactive);
                 }
             case '!':
                 if (readch('=')) {
@@ -177,7 +177,7 @@ public class Lexer {
             } while (Character.isDigit(peek));
             if (peek != '.') {
                 chpointer--;
-                return new Num(String.valueOf(v), line, chpointer - String.valueOf(v).length() + interoffset, constactive);
+                return new Num(String.valueOf(v), line, chpointer - String.valueOf(v).length() + 1 + interoffset, constactive);
             }
             float x = v;
             float d = 10;
@@ -188,7 +188,7 @@ public class Lexer {
                 d = d * 10;
             }
             chpointer--;
-            return new Num(String.valueOf(x), line, chpointer - String.valueOf(x).length() + interoffset, constactive);
+            return new Num(String.valueOf(x), line, chpointer - String.valueOf(x).length() + 1 + interoffset, constactive);
         }
 
         Token tokk = getSpecSymbol(peek);
@@ -218,8 +218,8 @@ public class Lexer {
         if (peek == (char) -1) {
             return null;
         }
-        Text t = new Text(String.valueOf(peek), line, chpointer - 1 + interoffset, constactive);
-        peek = ' ';
+        Text t = new Text(String.valueOf(peek), line, chpointer + interoffset, constactive);
+        //peek = ' ';
         return t;
     }
 
@@ -237,32 +237,52 @@ public class Lexer {
      * @throws IOException
      */
     private Token getSpecSymbol(char c) throws IOException {
-        Text t;
+        Token t;
         switch (c) {
             case ' ':
                 return getSpaceToken();
             case '\n':
-                Text text =  new Text(String.valueOf(c), line, chpointer - 2 + interoffset, constactive);
+                Text text =  new Text(String.valueOf(c), line, chpointer + interoffset, constactive);
                 line++;
                 return text;
             case '\t':
                 return getTabSpaces();
             case '\'':
                 if (!constactive) {
-                    t = new Text(String.valueOf(c), line, chpointer - 1 + interoffset, constactive);
+                    Key k = keys.get("\'");
+                    if (k != null) {
+                        t = new Key(String.valueOf(c), line, chpointer + interoffset, constactive);
+                    } else {
+                        t = new Text(String.valueOf(c), line, chpointer + interoffset, constactive);
+                    }
                     constactive = true;
                 } else {
                     constactive = false;
-                    t = new Text(String.valueOf(c), line, chpointer - 1 + interoffset, constactive);
+                    Key k = keys.get("\'");
+                    if (k != null) {
+                        t = new Key(String.valueOf(c), line, chpointer + interoffset, constactive);
+                    } else {
+                        t = new Text(String.valueOf(c), line, chpointer + interoffset, constactive);
+                    }
                 }
                 return t;
             case '"':
                 if (!constactive) {
-                    t = new Text(String.valueOf(c), line, chpointer - 1 + interoffset, constactive);
+                    Key k = keys.get("\"");
+                    if (k != null) {
+                        t = new Key(String.valueOf(c), line, chpointer + interoffset, constactive);
+                    } else {
+                        t = new Text(String.valueOf(c), line, chpointer + interoffset, constactive);
+                    }
                     constactive = true;
                 } else {
                     constactive = false;
-                    t = new Text(String.valueOf(c), line, chpointer - 1 + interoffset, constactive);
+                    Key k = keys.get("\"");
+                    if (k != null) {
+                        t = new Key(String.valueOf(c), line, chpointer + interoffset, constactive);
+                    } else {
+                        t = new Text(String.valueOf(c), line, chpointer + interoffset, constactive);
+                    }
                 }
                 return t;
 
@@ -284,7 +304,7 @@ public class Lexer {
             sb.append(' ');
             readch();
         }
-        Space space = new Space(sb.toString(), line, chpointer - 2 - sb.length());
+        Space space = new Space(sb.toString(), line, chpointer - sb.length() + interoffset);
         chpointer--;
         return space;
     }
@@ -311,7 +331,30 @@ public class Lexer {
             sb.append(" ");
             interoffset++;
         }
-        return new Space(sb.toString(), line, chpointer - tabspace);
+        Space space = new Space(sb.toString(), line, chpointer - tabspace + interoffset);
+        interoffset--;
+        return space;
+    }
+
+    /**
+     * It overrides the token based on the new token. Calls for her scan method
+     * and then transfers the characteristics of the old into the new token.
+     *
+     * @param token Overridden token
+     * @return New token
+     * @throws IOException
+     */
+    public Token overrideToken(Token token) throws IOException {
+        scanstr = token.lexeme;
+        chpointer = 0;
+        Token tok = scan();
+        if (tok != null) {
+            tok.line = token.line;
+            tok.constflag = token.constflag;
+            return tok;
+        }
+
+        return null;
     }
 
     /*private boolean isSymbol(char c) {

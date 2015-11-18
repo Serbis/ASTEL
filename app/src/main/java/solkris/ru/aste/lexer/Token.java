@@ -1,7 +1,5 @@
 package solkris.ru.aste.lexer;
 
-import android.graphics.Color;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,11 +33,11 @@ public class Token {
     /** Text style of undefined words */
     public static FontStyle textStyle  = null;
     /** Define default style of number keyword */
-    public static final FontStyle STYLE_DEF_NUMBER = new FontStyle(10, Color.BLUE, "-", false, false, false);
+    public static final FontStyle STYLE_DEF_NUMBER = new FontStyle(1, "0000FF", "monospace", false, false, false);
     /** Define default style of constant keyword */
-    public static final FontStyle STYLE_DEF_CONSTANT = new FontStyle(10, Color.GREEN, "-", false, false, false);
+    public static final FontStyle STYLE_DEF_CONSTANT = new FontStyle(1, "00FF00", "monospace", false, false, false);
     /** Define default style of undefined text keyword */
-    public static final FontStyle STYLE_DEF_TEXT = new FontStyle(10, Color.BLACK, "-", false, false, false);
+    public static final FontStyle STYLE_DEF_TEXT = new FontStyle(1, "000000", "monospace", false, false, false);
 
     /**
      * Constructor 1. Sets the token params. Specifies the length of the token.

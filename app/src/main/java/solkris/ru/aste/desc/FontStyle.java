@@ -1,15 +1,13 @@
 package solkris.ru.aste.desc;
 
-import android.graphics.Color;
-
 /**
  * Describes text style of token
  */
 public class FontStyle {
     /** Font size */
     public int size;
-    /** Font color */
-    public int color;
+    /** Font color in html */
+    public String color;
     /** Font name */
     public String font;
     /** Flag of bold text style */
@@ -22,7 +20,7 @@ public class FontStyle {
     /** Constructor 1. Init default values */
     public FontStyle() {
         size = 10;
-        color = Color.BLACK;
+        color = "000000";
         font = "";
     }
 
@@ -36,7 +34,7 @@ public class FontStyle {
      * @param italic Flag of italic text style
      * @param underline Flag of underline text style
      */
-    public FontStyle(int size, int color, String font, boolean bold, boolean italic, boolean underline) {
+    public FontStyle(int size, String color, String font, boolean bold, boolean italic, boolean underline) {
         this.size = size;
         this.color = color;
         this.font = font;
@@ -59,7 +57,7 @@ public class FontStyle {
      *
      * @param color int value of color
      */
-    public void setFontColor(int color) {
+    public void setFontColor(String color) {
         this.color = color;
     }
 
