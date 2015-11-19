@@ -351,6 +351,7 @@ public class Lexer {
         if (tok != null) {
             tok.line = token.line;
             tok.constflag = token.constflag;
+            tok.offset = token.offset;
             return tok;
         }
 

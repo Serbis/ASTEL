@@ -2,8 +2,11 @@ package solkris.ru.aste;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +32,14 @@ public class MainActivity extends ActionBarActivity {
         String textinhtml = "<font color=\"#FF8C00\" size=\"4\" face=\"Arial, Helvetica, sans-serif\"><u><i><b>class</font><br>" +
                 "<font color=\"#00FF00\" size=\"4\" face=\"Courier New, Courier, monospace\"><u><i><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class</font>";
         List<Keyword> keywords = new ArrayList<Keyword>();
-        keywords.add(new Keyword("class", new FontStyle(1, "FF8C00", "monospace", false, false, false)));
-        keywords.add(new Keyword("public", new FontStyle(1, "FF8C00", "monospace", false, false, false)));
-        keywords.add(new Keyword("int", new FontStyle(1, "FF8C00", "monospace", false, false, false)));
-        keywords.add(new Keyword("String", new FontStyle(1, "FF8C00", "monospace", false, false, false)));
-        keywords.add(new Keyword("\"", new FontStyle(1, "00FF00", "monospace", false, false, false)));
-        FontStyle numbersStyle = new FontStyle(1, "0000FF", "monospace", false, true, false);
-        FontStyle constStyle = new FontStyle(1, "FF0000", "monospace", false, false, false);
-        FontStyle textStyle = new FontStyle(1, "000000", "monospace", false, true, false);
+        keywords.add(new Keyword("class", new FontStyle(1, "FF8C00", "Arial", false, false, false)));
+        keywords.add(new Keyword("public", new FontStyle(1, "FF8C00", "Arial", false, false, false)));
+        keywords.add(new Keyword("int", new FontStyle(1, "FF8C00", "Arial", false, false, false)));
+        keywords.add(new Keyword("String", new FontStyle(1, "FF8C00", "Arial", false, false, false)));
+        keywords.add(new Keyword("\"", new FontStyle(1, "00FF00", "Arial", false, false, false)));
+        FontStyle numbersStyle = new FontStyle(1, "0000FF", "Arial", false, true, false);
+        FontStyle constStyle = new FontStyle(1, "FF0000", "Arial", false, false, false);
+        FontStyle textStyle = new FontStyle(1, "000000", "Arial", false, true, false);
 
         SyntaxEditText syntaxEditText = (SyntaxEditText) findViewById(R.id.set1);
         syntaxEditText.setKeywordList(keywords);
@@ -44,6 +47,13 @@ public class MainActivity extends ActionBarActivity {
         syntaxEditText.setConstantsStyle(constStyle);
         syntaxEditText.setTextStyle(textStyle);
         syntaxEditText.setText(text);
+        syntaxEditText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                Log.d("KEY", "KEY" );
+                return false;
+            }
+        });
         //syntaxEditText.getEditableText().replace(3, 15, Html.fromHtml("<font color=\"#FF00FF\" size=\"4\" face=\"Arial, Helvetica, sans-serif\"><u><i><b>ХУЙ</font>"));
 
         int a = 0;
