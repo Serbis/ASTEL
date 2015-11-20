@@ -347,6 +347,7 @@ public class Lexer {
     public Token overrideToken(Token token) throws IOException {
         scanstr = token.lexeme;
         chpointer = 0;
+        constactive = token.constflag;
         Token tok = scan();
         if (tok != null) {
             tok.line = token.line;

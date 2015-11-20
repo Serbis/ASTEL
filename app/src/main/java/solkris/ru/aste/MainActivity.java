@@ -2,11 +2,8 @@ package solkris.ru.aste;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,14 +43,8 @@ public class MainActivity extends ActionBarActivity {
         syntaxEditText.setNumbersStyle(numbersStyle);
         syntaxEditText.setConstantsStyle(constStyle);
         syntaxEditText.setTextStyle(textStyle);
-        syntaxEditText.setText(text);
-        syntaxEditText.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                Log.d("KEY", "KEY" );
-                return false;
-            }
-        });
+        //syntaxEditText.setText(text);
+
         //syntaxEditText.getEditableText().replace(3, 15, Html.fromHtml("<font color=\"#FF00FF\" size=\"4\" face=\"Arial, Helvetica, sans-serif\"><u><i><b>ХУЙ</font>"));
 
         int a = 0;
