@@ -44,7 +44,10 @@ public class SyntaxEditText extends EditText {
     private Token currenttok = null;
     /** Position the current token in the array tokla */
     private Pos currentpos = null;
+    /** Next token position*/
+    private Pos np = new Pos(0, 0, 0);
 
+    //private boolean nline;
 
     /**
      * Constructor 1.
@@ -98,7 +101,6 @@ public class SyntaxEditText extends EditText {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (count > before) {//add one char
                     try {
-                        Pos np;
                         String sub = s.subSequence(start, start + count).toString();
 
                         if (tokla.size() == 0) { //Если это первый символ ввода
@@ -109,12 +111,14 @@ public class SyntaxEditText extends EditText {
                         } else {
                            np = getNextTokenPos(currentpos, 1);
                         }
-
-
+                        if (sub.equals("\n")) {
+                            ifCharNewLine();
+                            return;
+                        }
                         if (currenttok.tag == Tag.SPACE) { //если это последний симов токена и если впереди не пробельный токен
-                            ifCurtokSpace(np, sub);
+                            ifCurtokSpace(sub);
                         } else {
-                            ifCurtokNotSpace(np, sub);
+                            ifCurtokNotSpace(sub);
 
                         }
                     } catch (Exception e) {
@@ -131,7 +135,19 @@ public class SyntaxEditText extends EditText {
         });
     }
 
-    private void ifCurtokSpace(Pos np, String sub) {
+    /**
+     * Branching analysis of character entered - if the current token is a
+     * whitespace. Checks is the position of the last character in the input
+     * stream. If so, it creates a new token. Next comes the test of whether
+     * there is a token in front, other than whitespace. In this case the
+     * addition of the following method is called a token. If the input character
+     * is a space, it is complemented by the current token. After all the tests
+     * concluded that the insertion of a character occurs in the body of the token
+     * white space, and the method is called inserting a new token.
+     *
+     * @param sub Processed symbols
+     */
+    private void ifCurtokSpace(String sub) {
         try {
             if (np == null) {
                 Token tok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
@@ -151,7 +167,14 @@ public class SyntaxEditText extends EditText {
         } catch (Exception ignored) {}
     }
 
-    private void ifCurtokNotSpace(Pos np, String sub) {
+    /**
+     * Branching analysis of character entered - if the current token is
+     * non-whitespace. Checks whether the character typed space or not, and
+     * calls the handlers of these types of characters.
+     *
+     * @param sub Processed symbols
+     */
+    private void ifCurtokNotSpace(String sub) {
         try {
             char ch;
             if (sub.length() == 1) {
@@ -159,55 +182,83 @@ public class SyntaxEditText extends EditText {
             } else {
                 ch = sub.charAt(sub.length() - 1);
             }
-            if (currenttok.lexeme.equals("\n")) {
-                ifCharNewLine(sub);
-            }
             if (ch != ' ') { //если введенный символ не пробел то то что ниже
                 ifCharNotSpace(ch, sub);
             } else { //иначе провеодим сегментацию участ
-                ifCharSpace(np, sub);
+                ifCharSpace(sub);
             }
         } catch (Exception ignored) {}
     }
 
-    public void ifCharNewLine(String sub) {
+    public void ifCharNewLine() {
         try {
-            Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
+            Token ntok = new Token("\n", currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
             ntok = lexer.overrideToken(ntok);
             createToken(currentpos, ntok);
+            if (tokla.size() > currentpos.line) {
+                tokla.add(new ArrayList<Token>());
+            } else {
+                tokla.add(currentpos.line, new ArrayList<Token>());
+            }
         } catch (Exception ignored) {}
     }
 
+    /**
+     * Branching analysis of character entered - if the current character
+     * space. Checks whether the current position of the input between the
+     * two complementary symbols. If so, it creates a new token. If the
+     * previous file symbol refers to complementary class, and ahead is not
+     * some complimentary token, it complements it with this symbol. If the
+     * input is happening on the far left position, it does not check whether
+     * the character entered complimentary. If this is true, then it creates
+     * from it a new token. If the character is a newline, it creates from it
+     * a new token. If all the above is not true, it adds character to the
+     * current token.
+     *
+     * @param ch Processed character
+     * @param sub Processed symbols
+     */
     public void ifCharNotSpace(char ch, String sub) {
         try {
-            Pos pp = getNextTokenPos(currentpos, 1);
-            if ((currenttok.lexeme.equals("(") && tokla.get(pp.line).get(pp.offset).lexeme.equals(")")) ||
-                    (currenttok.lexeme.equals("[") && tokla.get(pp.line).get(pp.offset).lexeme.equals("]")) ||
-                    (currenttok.lexeme.equals("{") && tokla.get(pp.line).get(pp.offset).lexeme.equals("}")) ||
-                    (currenttok.lexeme.equals("\"") && tokla.get(pp.line).get(pp.offset).lexeme.equals("\"")) ||
-                    (currenttok.lexeme.equals("'") && tokla.get(pp.line).get(pp.offset).lexeme.equals("'"))) {
+            if (np != null) {
+                if ((currenttok.lexeme.equals("(") && tokla.get(np.line).get(np.offset).lexeme.equals(")")) ||
+                        (currenttok.lexeme.equals("[") && tokla.get(np.line).get(np.offset).lexeme.equals("]")) ||
+                        (currenttok.lexeme.equals("{") && tokla.get(np.line).get(np.offset).lexeme.equals("}")) ||
+                        (currenttok.lexeme.equals("\"") && tokla.get(np.line).get(np.offset).lexeme.equals("\"")) ||
+                        (currenttok.lexeme.equals("'") && tokla.get(np.line).get(np.offset).lexeme.equals("'"))) {
+                    Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
+                    ntok = lexer.overrideToken(ntok);
+                    createToken(currentpos, ntok);
+                } else if ((currenttok.lexeme.equals("(") && !tokla.get(np.line).get(np.offset).lexeme.equals(")")) ||
+                        (currenttok.lexeme.equals("[") && !tokla.get(np.line).get(np.offset).lexeme.equals("]")) ||
+                        (currenttok.lexeme.equals("{") && !tokla.get(np.line).get(np.offset).lexeme.equals("}")) ||
+                        (currenttok.lexeme.equals("\"") && !tokla.get(np.line).get(np.offset).lexeme.equals("\"")) ||
+                        (currenttok.lexeme.equals("'") && !tokla.get(np.line).get(np.offset).lexeme.equals("'"))) {
+                    appendTokenLeftSide(ch);
+                }
+            }
+            if (ch == '(' || ch == ')' || ch == '[' || ch == ']' || ch == '{'||
+                    ch == '}' || ch == '"'){
                 Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
                 ntok = lexer.overrideToken(ntok);
-                createToken(currentpos, ntok);
-            } else if ((currenttok.lexeme.equals("(") && !tokla.get(pp.line).get(pp.offset).lexeme.equals(")")) ||
-                    (currenttok.lexeme.equals("[") && !tokla.get(pp.line).get(pp.offset).lexeme.equals("]")) ||
-                    (currenttok.lexeme.equals("{") && !tokla.get(pp.line).get(pp.offset).lexeme.equals("}")) ||
-                    (currenttok.lexeme.equals("\"") && !tokla.get(pp.line).get(pp.offset).lexeme.equals("\"")) ||
-                    (currenttok.lexeme.equals("'") && !tokla.get(pp.line).get(pp.offset).lexeme.equals("'"))) {
-                appendTokenLeftSide(ch);
+                createToken(new Pos(currentpos.line, currentpos.offset, 0), ntok);
+            } else if (currenttok.lexeme.equals("\n")) {
+                Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
+                ntok = lexer.overrideToken(ntok);
+                createToken(new Pos(currentpos.line, currentpos.offset, 0), ntok);
             } else {
                 addOneChar(ch);
             }
         } catch (Exception ignored) {}
     }
 
-    public void ifCharSpace(Pos np, String sub) {
+    public void ifCharSpace(String sub) {
         try {
             if (np == null) {
                 Token tok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
                 tok = lexer.overrideToken(tok);
                 createToken(new Pos(currentpos.line, currentpos.offset, 0), tok);
-            } else if (tokla.get(np.line).get(np.offset).tag != Tag.SPACE) {
+            } else if (tokla.get(np.line - 1).get(np.offset).tag != Tag.SPACE) {
                 Token tok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
                 tok = lexer.overrideToken(tok);
                 createToken(currentpos, tok);
@@ -432,7 +483,13 @@ public class SyntaxEditText extends EditText {
         curpos = selStart;
 
         if (tokla != null) {
-            currentpos = getSelectedTokenPos(selStart);
+            //if (!nline) {
+                currentpos = getSelectedTokenPos(selStart);
+            //} else {
+            //   nline = false;
+            //}
+            //Неочевидная инкрементация позиции по строке в методе getSelectedTokenPos. Так же
+            //сделать переном после пробела и проверить удаление переносов!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if (currentpos != null) {
                 currenttok = tokla.get(currentpos.line).get(currentpos.offset);
                 Log.d("TOKEN", String.valueOf(currenttok.lexeme + " POS=" + currentpos.line + ":" + currentpos.offset + ":" + currentpos.interoffset));
@@ -473,7 +530,11 @@ public class SyntaxEditText extends EditText {
             //resizeTokensOffset(tokpos, -1);
             tokla.get(tokpos.line).remove(tokpos.offset);
             if (!currenttok.lexeme.equals("\n")) {
-                joinTokens(new Pos(currentpos.line, currentpos.offset - 1, 0), new Pos(currentpos.line, currentpos.offset, 0));
+                if (tokla.get(0).size() != 0) {
+                    joinTokens(new Pos(currentpos.line, currentpos.offset - 1, 0), new Pos(currentpos.line, currentpos.offset, 0));
+                } else {
+                    tokla.remove(0);
+                }
             }
         }
 
@@ -503,6 +564,11 @@ public class SyntaxEditText extends EditText {
             tok = lexer.overrideToken(tok);
             tokla.get(currentpos.line).set(currentpos.offset, tok);
             replaceTokenInText(tok, 0);
+            if (currenttok.lexeme.equals("\n")) {
+                //currentpos.line++;
+                currentpos.offset = 0;
+                //nline = true;
+            }
         } catch (Exception e) { e.printStackTrace(); }
     }
 
@@ -569,7 +635,11 @@ public class SyntaxEditText extends EditText {
 
     private void createToken(Pos pos, Token token) {
         try {
-            tokla.get(pos.line).add(pos.offset, token);
+            if (np == null) {
+                tokla.get(pos.line).add(token);
+            } else {
+                tokla.get(pos.line).add(pos.offset, token);
+            }
             Token tokn = lexer.overrideToken(token);
             resizeTokensOffset(getNextTokenPos(pos, 1), tokn.length);
             replaceTokenInText(tokn, 0);
@@ -579,17 +649,17 @@ public class SyntaxEditText extends EditText {
     }
 
     private Pos getNextTokenPos(Pos pos, int step) {
-        try {
             int ls = tokla.get(pos.line).size();
-            if (pos.offset + step >= ls) {
+            if (pos.offset + step > ls) {
                 int min = pos.offset + step - ls;
                 return new Pos(pos.line + 1, min, 0);
             } else {
-                return new Pos(pos.line, pos.offset + step, 0);
+                if (ls < pos.offset + step + 1) {
+                    return null;
+                } else {
+                    return new Pos(pos.line, pos.offset + step, 0);
+                }
             }
-        } catch (Exception e) {
-            return null;
-        }
 
     }
 
