@@ -43,7 +43,7 @@ public class MainActivity extends ActionBarActivity {
         syntaxEditText.setNumbersStyle(numbersStyle);
         syntaxEditText.setConstantsStyle(constStyle);
         syntaxEditText.setTextStyle(textStyle);
-        //syntaxEditText.setText(text);
+        syntaxEditText.setText(text);
 
         //syntaxEditText.getEditableText().replace(3, 15, Html.fromHtml("<font color=\"#FF00FF\" size=\"4\" face=\"Arial, Helvetica, sans-serif\"><u><i><b>ХУЙ</font>"));
 

@@ -178,8 +178,17 @@ public class Lexer {
             if (peek != '.') {
                 chpointer--;
                 return new Num(String.valueOf(v), line, chpointer - String.valueOf(v).length() + 1 + interoffset, constactive);
+            } else {
+                String t = "";
+                for (;;) {
+                    readch();
+                    if (!Character.isDigit(peek)) break;
+                    t += peek;
+                }
+                chpointer--;
+                return new Num(String.valueOf(v) + "." + t, line, chpointer - String.valueOf(v).length() - t.length() + interoffset, constactive);
             }
-            float x = v;
+            /*float x = v;
             float d = 10;
             for (;;) {
                 readch();
@@ -188,7 +197,7 @@ public class Lexer {
                 d = d * 10;
             }
             chpointer--;
-            return new Num(String.valueOf(x), line, chpointer - String.valueOf(x).length() + 1 + interoffset, constactive);
+            return new Num(String.valueOf(x), line, chpointer - String.valueOf(x).length() + 1 + interoffset, constactive);*/
         }
 
         Token tokk = getSpecSymbol(peek);

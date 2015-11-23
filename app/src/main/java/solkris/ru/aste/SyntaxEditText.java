@@ -46,8 +46,10 @@ public class SyntaxEditText extends EditText {
     private Pos currentpos = null;
     /** Next token position*/
     private Pos np = new Pos(0, 0, 0);
+    
+    private Token pt = new Token(" ", 0, 0, false);
 
-    //private boolean nline;
+    private boolean constf = false;
 
     /**
      * Constructor 1.
@@ -110,6 +112,9 @@ public class SyntaxEditText extends EditText {
                             return;
                         } else {
                            np = getNextTokenPos(currentpos, 1);
+                           //if (tokla.get(0).size() > 1) {
+                           //    pt = getPrevToken(currentpos, 1);
+                           //}ву
                         }
                         if (sub.equals("\n")) {
                             ifCharNewLine();
@@ -117,6 +122,8 @@ public class SyntaxEditText extends EditText {
                         }
                         if (currenttok.tag == Tag.SPACE) { //если это последний симов токена и если впереди не пробельный токен
                             ifCurtokSpace(sub);
+                        } else if (currenttok.tag == Tag.NUM) {
+                            ifCurtokNum(sub);
                         } else {
                             ifCurtokNotSpace(sub);
 
@@ -149,20 +156,39 @@ public class SyntaxEditText extends EditText {
      */
     private void ifCurtokSpace(String sub) {
         try {
-            if (np == null) {
+            if (sub.equals(" ")) { //иначе если введеный символ пробел
+                addOneChar(sub.charAt(0)); //то дополняем пробельный токен
+            } else if (np == null) {
                 Token tok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
                 tok = lexer.overrideToken(tok);
                 createToken(currentpos, tok);
             } else if (currentpos.interoffset == currenttok.length && //то дополняем впереди идущий
-                    tokla.get(np.line).get(np.interoffset).tag != Tag.SPACE &&
+                    tokla.get(np.line).get(np.offset).tag != Tag.SPACE &&
                     !sub.equals(" ")) {
                 appendTokenLeftSide(sub.charAt(0));
-            } else if (sub.equals(" ")) { //иначе если введеный символ пробел
-                addOneChar(sub.charAt(0)); //то дополняем пробельный токен
-            } else {
+            } else  {
                 Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
                 ntok = lexer.overrideToken(ntok);
                 insertToken(currentpos, ntok);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void ifCurtokNum(String sub) {
+        try {
+            char ch;
+            if (sub.length() == 1) {
+                ch = sub.charAt(0);
+            } else {
+                ch = sub.charAt(sub.length() - 1);
+            }
+            if (Character.isDigit(ch) || ch == '.') {
+                addOneChar(ch);
+            }
+            if (!Character.isDigit(ch) && ch != '.') {
+                Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
+                ntok = lexer.overrideToken(ntok);
+                createToken(new Pos(currentpos.line, currentpos.offset, 0), ntok);
             }
         } catch (Exception ignored) {}
     }
@@ -238,11 +264,29 @@ public class SyntaxEditText extends EditText {
                 }
             }
             if (ch == '(' || ch == ')' || ch == '[' || ch == ']' || ch == '{'||
-                    ch == '}' || ch == '"'){
+                    ch == '}' || ch == '"' || ch == '\''){
+                if (ch == '"' || ch == '\'') {
+                    constf = !constf;
+                }
                 Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
                 ntok = lexer.overrideToken(ntok);
                 createToken(new Pos(currentpos.line, currentpos.offset, 0), ntok);
+            } else if (currenttok.lexeme.equals("(") || currenttok.lexeme.equals("[") || currenttok.lexeme.equals("{")||
+                    currenttok.lexeme.equals("\"") || currenttok.lexeme.equals("'")) {
+                if (currenttok.lexeme.equals("\"")  || currenttok.lexeme.equals("'") ) {
+                    constf = !constf;
+                }
+                Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
+                ntok = lexer.overrideToken(ntok);
+                createToken(new Pos(currentpos.line, currentpos.offset, 0), ntok);
+            } else if (ch == '=' || ch == '!' || (currenttok.lexeme.charAt(0) == '=' || currenttok.lexeme.charAt(0) == '!')) {
+                Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
+                ntok = lexer.overrideToken(ntok);
+                createToken(new Pos(currentpos.line, currentpos.offset, 0), ntok);
+            } else if (ch == '.' && currenttok.tag == Tag.NUM) {
+                addOneChar(ch);
             } else if (currenttok.lexeme.equals("\n")) {
+                currentpos.line++;
                 Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
                 ntok = lexer.overrideToken(ntok);
                 createToken(new Pos(currentpos.line, currentpos.offset, 0), ntok);
@@ -254,7 +298,12 @@ public class SyntaxEditText extends EditText {
 
     public void ifCharSpace(String sub) {
         try {
-            if (np == null) {
+            if (currenttok.lexeme.equals("\n")) {
+                currentpos.line++;
+                Token ntok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
+                ntok = lexer.overrideToken(ntok);
+                createToken(new Pos(currentpos.line, currentpos.offset, 0), ntok);
+            } else if (np == null) {
                 Token tok = new Token(sub, currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
                 tok = lexer.overrideToken(tok);
                 createToken(new Pos(currentpos.line, currentpos.offset, 0), tok);
@@ -483,16 +532,10 @@ public class SyntaxEditText extends EditText {
         curpos = selStart;
 
         if (tokla != null) {
-            //if (!nline) {
                 currentpos = getSelectedTokenPos(selStart);
-            //} else {
-            //   nline = false;
-            //}
-            //Неочевидная инкрементация позиции по строке в методе getSelectedTokenPos. Так же
-            //сделать переном после пробела и проверить удаление переносов!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if (currentpos != null) {
                 currenttok = tokla.get(currentpos.line).get(currentpos.offset);
-                Log.d("TOKEN", String.valueOf(currenttok.lexeme + " POS=" + currentpos.line + ":" + currentpos.offset + ":" + currentpos.interoffset));
+                Log.d("TOKEN", currenttok.lexeme + String.valueOf(" POS=" + currentpos.line + ":" + currentpos.offset + ":" + currentpos.interoffset));
             } else {
                 Log.d("MSG", "currentpos NULL");
             }
@@ -551,11 +594,12 @@ public class SyntaxEditText extends EditText {
      */
     private void addOneChar(char ch) {
         try {
-            Pos tokpos = getSelectedTokenPos(curpos);
+            //Pos tokpos = getSelectedTokenPos(curpos);
+            Pos tokpos = currentpos;
             Token tok = tokla.get(tokpos.line).get(tokpos.offset);
             tok.length++;
             tok.lexeme += ch;
-            resizeTokensOffset(tokpos, +1);
+            resizeTokensOffset(new Pos(currentpos.line, currentpos.offset - 1, 0), +1);
             if (tokpos.interoffset + 1 == tok.length) {
                 tok.lexeme = tok.lexeme.substring(0, tokpos.interoffset) + ch;
             } else {
@@ -564,11 +608,6 @@ public class SyntaxEditText extends EditText {
             tok = lexer.overrideToken(tok);
             tokla.get(currentpos.line).set(currentpos.offset, tok);
             replaceTokenInText(tok, 0);
-            if (currenttok.lexeme.equals("\n")) {
-                //currentpos.line++;
-                currentpos.offset = 0;
-                //nline = true;
-            }
         } catch (Exception e) { e.printStackTrace(); }
     }
 
@@ -585,6 +624,14 @@ public class SyntaxEditText extends EditText {
         try {
             Pos tokpos = new Pos(currentpos.line, currentpos.offset + 1, 0);
             Token tok = tokla.get(tokpos.line).get(tokpos.offset);
+            if (tok.lexeme.equals("(") || tok.lexeme.equals(")") || tok.lexeme.equals("[") || tok.lexeme.equals("]") ||
+                    tok.lexeme.equals("{") || tok.lexeme.equals("}") || tok.lexeme.equals("\"") || tok.lexeme.equals("'") ||
+                    tok.lexeme.equals("!") || tok.lexeme.equals("=") || tok.lexeme.equals("<") || tok.lexeme.equals(">")) {
+                Token ntok = new Token(String.valueOf(ch), currenttok.line, currenttok.offset + currentpos.interoffset, currenttok.constflag);
+                ntok = lexer.overrideToken(ntok);
+                createToken(new Pos(currentpos.line, currentpos.offset, 0), ntok);
+                return;
+            }
             tok.length++;
             resizeTokensOffset(tokpos, +1);
             tok.lexeme = ch + tok.lexeme;
@@ -621,6 +668,14 @@ public class SyntaxEditText extends EditText {
     private void joinTokens(Pos p1, Pos p2) {
         try {
             Token t2 = tokla.get(p2.line).get(p2.offset);
+            if (t2.tag == Tag.NUM || t2.lexeme.equals("(") || t2.lexeme.equals(")") ||
+                    t2.lexeme.equals("[") || t2.lexeme.equals("]") ||
+                    t2.lexeme.equals("{") || t2.lexeme.equals("}") ||
+                    t2.lexeme.equals("\"")|| t2.lexeme.equals("'") ||
+                    t2.lexeme.equals("=") || (t2.lexeme.equals("!") ||
+                    t2.lexeme.equals(">") || (t2.lexeme.equals("<")))){
+                return;
+            }
             tokla.get(p1.line).get(p1.offset).lexeme += t2.lexeme;
             tokla.get(p1.line).get(p1.offset).length += t2.length;
             tokla.get(p1.line).get(p1.offset).constflag = t2.constflag;
@@ -640,6 +695,7 @@ public class SyntaxEditText extends EditText {
             } else {
                 tokla.get(pos.line).add(pos.offset, token);
             }
+            token.constflag = constf;
             Token tokn = lexer.overrideToken(token);
             resizeTokensOffset(getNextTokenPos(pos, 1), tokn.length);
             replaceTokenInText(tokn, 0);
@@ -665,11 +721,11 @@ public class SyntaxEditText extends EditText {
 
     private Token getPrevToken(Pos pos, int step) {
         int ls = tokla.get(pos.line).size();
-        if (pos.offset - step <= ls) {
-            int min = pos.offset + step - ls;
+        if (pos.offset - step > ls) {
+            int min = pos.offset + step - ls + 1;
             return tokla.get(pos.line - 1).get(min);
         } else {
-            return tokla.get(pos.line).get(pos.offset - step);
+            return tokla.get(pos.line).get(pos.offset - step + 1);
         }
     }
 
