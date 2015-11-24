@@ -24,6 +24,8 @@ import java.util.List;
 
 import solkris.ru.aste.desc.FontStyle;
 import solkris.ru.aste.desc.Keyword;
+import solkris.ru.aste.desc.Pos;
+import solkris.ru.aste.lexer.Dla;
 import solkris.ru.aste.lexer.Lexer;
 import solkris.ru.aste.lexer.Tag;
 import solkris.ru.aste.lexer.Token;
@@ -50,6 +52,8 @@ public class SyntaxEditText extends EditText {
     private Token pt = new Token(" ", 0, 0, false);
 
     private boolean constf = false;
+
+    private Dla dla = new Dla();
 
     /**
      * Constructor 1.
@@ -90,7 +94,7 @@ public class SyntaxEditText extends EditText {
     public void init() {
         setSingleLine(false);
         setGravity(Gravity.TOP);
-        currentpos = new Pos(0, 0, 0);
+        currentpos = new Pos(1000, 1000, 0);
         addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -111,12 +115,47 @@ public class SyntaxEditText extends EditText {
                             createToken(new Pos(0, 0, 0), tok);
                             return;
                         } else {
-                           np = getNextTokenPos(currentpos, 1);
-                           //if (tokla.get(0).size() > 1) {
-                           //    pt = getPrevToken(currentpos, 1);
-                           //}ву
+                            np = getNextTokenPos(currentpos, 1);
                         }
-                        if (sub.equals("\n")) {
+
+                        currenttok.constflag = constf;
+                        final ArrayList<List<Token>> tkl = tokla;
+                        final Token ct = currenttok;
+                        final Pos cp = currentpos;
+                        final Pos npp = np;
+                        Dla.TokenOperation op = dla.trace(tkl, ct, cp, npp, sub);
+                        switch (op.tokenOperationType) {
+                            case TOKEN_ADD:
+                                if (op.token.lexeme.equals("'") || op.token.lexeme.equals("\"")) {
+                                    constf = !constf;
+                                }
+                                if (tokla.size() < op.pos.line + 1) {
+                                    tokla.add(new ArrayList<Token>());
+                                }
+                                if (tokla.get(op.pos.line).size() <= op.pos.offset + 1) { //Если впереди нет токенов
+                                    tokla.get(op.pos.line).add(op.token);
+                                } else {
+                                    tokla.get(op.pos.line).add(op.pos.offset - 1, op.token);
+                                }
+                                if (np != null) {
+                                    resizeTokensOffset(new Pos(op.pos.line, op.pos.offset - 1, 0), 1);
+                                }
+
+                                replaceTokenInText(op.token, 0);
+                                break;
+
+                            case TOKEN_CHANGE:
+                                tokla.get(op.pos.line).set(op.pos.offset, op.token);
+                                if (np != null) {
+                                    resizeTokensOffset(new Pos(op.pos.line, op.pos.offset, 0), 1);
+                                }
+                                replaceTokenInText(op.token, 0);
+                                break;
+                            case TOKEN_INSERT:
+
+                                break;
+                        }
+                        /*if (sub.equals("\n")) {
                             ifCharNewLine();
                             return;
                         }
@@ -127,7 +166,7 @@ public class SyntaxEditText extends EditText {
                         } else {
                             ifCurtokNotSpace(sub);
 
-                        }
+                        }*/
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -369,7 +408,7 @@ public class SyntaxEditText extends EditText {
      * @param text Raw text
      */
     public void setText(String text) {
-        int line = 1;
+        int line = 0;
 
         List<Token> tokens = lexer.scanAll(text);
         List<Token> ts = new ArrayList<>();
@@ -504,17 +543,18 @@ public class SyntaxEditText extends EditText {
      */
     private void resizeTokensOffset(Pos pos, int inde) {
         boolean first = true;
-        for (int i = pos.line; i < tokla.size(); i++) {
-            for (int j = 0; j < tokla.get(i).size(); j++) {
-                if (first) {
-                    if (j >= pos.offset) {
-                        first = false;
+            for (int i = pos.line; i < tokla.size(); i++) {
+                for (int j = 0; j < tokla.get(i).size(); j++) {
+                    if (first) {
+                        if (j >= pos.offset) {
+                            first = false;
+                        }
+                    } else {
+                        tokla.get(i).get(j).offset += inde;
                     }
-                } else {
-                    tokla.get(i).get(j).offset += inde;
                 }
             }
-        }
+
     }
 
     /**
@@ -534,6 +574,7 @@ public class SyntaxEditText extends EditText {
         if (tokla != null) {
                 currentpos = getSelectedTokenPos(selStart);
             if (currentpos != null) {
+                np = getNextTokenPos(currentpos, 1);
                 currenttok = tokla.get(currentpos.line).get(currentpos.offset);
                 Log.d("TOKEN", currenttok.lexeme + String.valueOf(" POS=" + currentpos.line + ":" + currentpos.offset + ":" + currentpos.interoffset));
             } else {
@@ -730,36 +771,5 @@ public class SyntaxEditText extends EditText {
     }
 
 
-    /**
-     * Convenience class for describing two-dimensional arrays positions
-     * within.
-     *
-     */
-    private static class Pos {
-        /** Line */
-        public int line;
-        /** Offset in line */
-        public int offset;
-        /** Shift in the token*/
-        public int interoffset;
-
-        /**
-         * Constructor 1. Without parameters.
-         *
-         */
-        public Pos() {}
-
-        /**
-         * Constructor 2.
-         *
-         * @param line Line
-         * @param offset Offset in line
-         * @param interoffset Offset in the token
-         */
-        public Pos(int line, int offset, int interoffset) {
-            this.line = line;
-            this.offset = offset;
-            this.interoffset = interoffset;
-        }
-    }
+    
 }

@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class Lexer {
     /** Counter lines of source code */
-    private int line = 1;
+    private int line = 0;
     /** Pointer to the number of the current unreadable characters */
     private int chpointer = 0;
     /** Source code */
