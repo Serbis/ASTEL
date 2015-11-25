@@ -101,6 +101,10 @@ public class Lexer {
     public List<Token> scanAll(String input) {
         List<Token> tokens = new ArrayList<>();
         Token st;
+        chpointer = 0;
+        peek = ' ';
+        interoffset = 0;
+        line = 0;
         scanstr = input;
         try {
             while((st = scan()) != null) {
@@ -309,13 +313,15 @@ public class Lexer {
      */
     private Token getSpaceToken() throws IOException {
         StringBuilder sb = new StringBuilder();
-        while (peek == ' ') {
-            sb.append(' ');
-            readch();
-        }
-        Space space = new Space(sb.toString(), line, chpointer - sb.length() + interoffset);
-        chpointer--;
-        return space;
+            while (peek == ' ') {
+                sb.append(' ');
+                readch();
+                if (peek == (char) -1)
+                    return null;
+            }
+            Space space = new Space(sb.toString(), line, chpointer - sb.length() + interoffset);
+            chpointer--;
+            return space;
     }
 
     /**
