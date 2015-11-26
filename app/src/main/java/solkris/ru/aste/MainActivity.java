@@ -23,8 +23,10 @@ public class MainActivity extends ActionBarActivity {
                 "\tpublic void main() {\n" +
                 "\t\tint a = 1;\n" +
                 "\t\tint b = 1.9;\n" +
+                "\n" +
                 "\t\tString c = \"abc\";\n"+
                 "\t}\n" +
+                "a\n" +
                 "}";
         String textinhtml = "<font color=\"#FF8C00\" size=\"4\" face=\"Arial, Helvetica, sans-serif\"><u><i><b>class</font><br>" +
                 "<font color=\"#00FF00\" size=\"4\" face=\"Courier New, Courier, monospace\"><u><i><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class</font>";
@@ -43,7 +45,7 @@ public class MainActivity extends ActionBarActivity {
         syntaxEditText.setNumbersStyle(numbersStyle);
         syntaxEditText.setConstantsStyle(constStyle);
         syntaxEditText.setTextStyle(textStyle);
-        syntaxEditText.setText(text);
+        //syntaxEditText.setText(text);
 
         //syntaxEditText.getEditableText().replace(3, 15, Html.fromHtml("<font color=\"#FF00FF\" size=\"4\" face=\"Arial, Helvetica, sans-serif\"><u><i><b>ХУЙ</font>"));
 

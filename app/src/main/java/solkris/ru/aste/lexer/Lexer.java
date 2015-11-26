@@ -1,5 +1,7 @@
 package solkris.ru.aste.lexer;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -40,6 +42,8 @@ public class Lexer {
     /** An array of keywords */
     private Hashtable<String, Key> keys = new Hashtable<>();
 
+    private boolean stop = false;
+
     /**
      * Constructor. Produces reservations keywords
      */
@@ -70,6 +74,7 @@ public class Lexer {
             chpointer++;
         } catch (IndexOutOfBoundsException e) {
             peek = (char) -1;
+            stop = true;
         }
     }
 
@@ -104,11 +109,14 @@ public class Lexer {
         chpointer = 0;
         peek = ' ';
         interoffset = 0;
+        stop = false;
         line = 0;
         scanstr = input;
         try {
             while((st = scan()) != null) {
                 tokens.add(st);
+                if (tokens.size() > 1000)
+                    Log.d("AAAAAAAAAAAAAAAA", "100000");
             }
         } catch (IOException ignored) { }
 
@@ -129,6 +137,8 @@ public class Lexer {
      */
     public Token scan() throws IOException {
         readch();
+        if (stop)
+            return null;
         switch (peek) {
             case '&':
                 if (readch('&')) {
@@ -210,11 +220,14 @@ public class Lexer {
         }
 
         if (Character.isLetter(peek)) {
-
+            if (stop)
+                return null;
             StringBuilder b = new StringBuilder();
             do {
                 b.append(peek);
                 readch();
+                if (peek == (char) -1)
+                    stop = true;
             } while (Character.isLetterOrDigit(peek));
             String s = b.toString();
             Key k = keys.get(s);
@@ -312,13 +325,17 @@ public class Lexer {
      * @throws IOException
      */
     private Token getSpaceToken() throws IOException {
+        if (stop) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder();
             while (peek == ' ') {
                 sb.append(' ');
                 readch();
                 if (peek == (char) -1)
-                    return null;
+                    stop = true;
             }
+
             Space space = new Space(sb.toString(), line, chpointer - sb.length() + interoffset);
             chpointer--;
             return space;
