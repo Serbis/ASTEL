@@ -1,4 +1,4 @@
-package solkris.ru.aste;
+package solkris.ru.astel;
 
 import org.junit.Test;
 
