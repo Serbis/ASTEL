@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -17,6 +18,7 @@ import android.text.style.UnderlineSpan;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 
 import java.util.ArrayList;
@@ -93,6 +95,8 @@ public class SyntaxEditText extends EditText {
         setSingleLine(false);
         setGravity(Gravity.TOP);
         linespos.add(new Line(0, 1));
+        setImeOptions(EditorInfo.IME_ACTION_NONE);
+        setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS | InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -115,6 +119,7 @@ public class SyntaxEditText extends EditText {
                             }
                         }
                     }
+                    replacedf = false;
                 } else {
                     replacedf = false;
                 }
@@ -180,6 +185,8 @@ public class SyntaxEditText extends EditText {
                             intputf = true;
                         }
                     }
+
+                    replacef = false;
 
                 } else {
                     replacef = false;

@@ -19,7 +19,7 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        String text = "public class Main {\n" +
+        /*String text = "public class Main {\n" +
                 "\tpublic void main() {\n" +
                 "\t\tint a = 1;\n" +
                 "\t\tint b = 1.9;\n" +
@@ -27,12 +27,27 @@ public class MainActivity extends ActionBarActivity {
                 "\t\tString c = \"abc\";\n"+
                 "\t}\n" +
                 "a\n" +
+                "}";*/
+        String text = "public class Sample {\n" +
+                "\tpublic Sample() {\n" +
+                "\t\tint a = 1;\n" +
+                "\t\tint b = 1.9;\n" +
+                "\t\tString c = \"abc\";\n"+
+                "\t}\n" +
+                "\tpublic void method(int a) {\n" +
+                "\t\tint sum = 1 + a;\n" +
+                "\t\tString b = \"hello\";\n" +
+                "\t\tSystem.out.println(b);\n" +
+                "\t}\n" +
                 "}";
+
         String textinhtml = "<font color=\"#FF8C00\" size=\"4\" face=\"Arial, Helvetica, sans-serif\"><u><i><b>class</font><br>" +
                 "<font color=\"#00FF00\" size=\"4\" face=\"Courier New, Courier, monospace\"><u><i><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class</font>";
         List<Keyword> keywords = new ArrayList<Keyword>();
         keywords.add(new Keyword("class", new FontStyle(1, "FF8C00", "Arial", false, false, false)));
         keywords.add(new Keyword("public", new FontStyle(1, "FF8C00", "Arial", false, false, false)));
+        keywords.add(new Keyword("static", new FontStyle(1, "FF8C00", "Arial", false, false, false)));
+        keywords.add(new Keyword("void", new FontStyle(1, "FF8C00", "Arial", false, false, false)));
         keywords.add(new Keyword("int", new FontStyle(1, "FF8C00", "Arial", false, false, false)));
         keywords.add(new Keyword("String", new FontStyle(1, "FF8C00", "Arial", false, false, false)));
         keywords.add(new Keyword("\"", new FontStyle(1, "00FF00", "Arial", false, false, false)));
@@ -45,7 +60,7 @@ public class MainActivity extends ActionBarActivity {
         syntaxEditText.setNumbersStyle(numbersStyle);
         syntaxEditText.setConstantsStyle(constStyle);
         syntaxEditText.setTextStyle(textStyle);
-        //syntaxEditText.setText(text);
+        syntaxEditText.setText(text);
 
         //syntaxEditText.getEditableText().replace(3, 15, Html.fromHtml("<font color=\"#FF00FF\" size=\"4\" face=\"Arial, Helvetica, sans-serif\"><u><i><b>ХУЙ</font>"));
 
@@ -76,4 +91,5 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }
