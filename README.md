@@ -88,4 +88,4 @@ After these actions the component is ready for operation. This is the minimum th
 The minimum version of the Android API - 11. At the lexical analyzer has a number of syntactic constraints. Keywords may not include characters that are typical of most control structures of programming languages - < > ( ) { } [ ] = ! . , | & + - * / and space.
 
 ## Links
-[JavaDoc documentaton](https://cdn.rawgit.com/Serbis/ASTE/master/astel/javadoc/index.html)
+[JavaDoc documentaton](https://cdn.rawgit.com/Serbis/ASTEL/master/astel/javadoc/index.html)
