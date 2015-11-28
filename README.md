@@ -1,4 +1,5 @@
 ## Overview
+Warning, this is **not a stable version**
 Text field for Android with support for customizable syntax highlighting and autocompletion secretions code. Distributed under license LGPL v3 as a pluggable external library. Stated possibilities text editor, bold marked realized the problem:
 * **Highlighting arbitrary syntax**
 * **Flexible adjustment of colors**
